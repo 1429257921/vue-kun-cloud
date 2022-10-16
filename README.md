@@ -1,6 +1,4 @@
-# vue-kun-cloud
-
-> 坤坤云
+<h1 style="text-align: center">坤坤平台前端</h1>
 
 ## Build Setup
 
@@ -21,7 +19,8 @@ npm run build --report
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
 
 
-目录结构
+## 🗿 文件结构
+```lua
 ├── README.md            项目介绍
 ├── index.html           入口页面
 ├── build              构建脚本配置文件目录
@@ -44,5 +43,5 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 │  ├── routes             前端路由目录
 │  │  └── index.js
 ├── static             纯静态资源（不会被wabpack构建）
-
+```
 

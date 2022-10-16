@@ -7,13 +7,19 @@ import 'element-ui/lib/theme-chalk/index.css';
 import axios from 'axios';
 // 引入rsa加密模块
 import JSEncrypt from "jsencrypt";
+// 引入vue-cookie
+import VueCookies from 'vue-cookies';
+
 
 Vue.config.productionTip = false;
+// 配置全局变量
 Vue.use(ElementUI);
 // 配置全局变量
 Vue.prototype.$http = axios;
 // 配置全局变量
 Vue.prototype.$jsEncrypt = JSEncrypt;
+// 配置全局变量
+Vue.use(VueCookies)
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

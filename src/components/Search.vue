@@ -19,7 +19,7 @@
             <el-avatar
               :size="35"
               style="border: 1px solid #4e71f2"
-              src="../../static/logo.png"
+              :src="getConfigVO.pictureBaseUrl + loginUserInfo.avatar"
             ></el-avatar>
             <p>{{ subAlias }}</p>
           </el-container>
@@ -38,13 +38,12 @@
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <el-link
+        <el-button
           class="to_login_link"
+          type="text"
           v-show="!showUserData"
-          type="info"
-          underline="true"
-          :href="loginUrl"
-          >去登录..</el-link
+          @click="gotoLogin"
+          >去登录..</el-button
         >
       </el-container>
     </el-header>
@@ -68,6 +67,7 @@
             </el-input>
             <!-- 搜索按钮 -->
             <el-button
+              style="background-color: #4e6ef2"
               type="primary"
               :loading="showLoading"
               @click="doSearch(searchValue)"
@@ -89,7 +89,7 @@
             <!-- 展示表情包图片 -->
             <el-image
               class="emoji_content"
-              src="../../static/nodata.png"
+              :src="getConfigVO.pictureBaseUrl + emoji.url"
               fit="fill"
             >
             </el-image>
@@ -141,9 +141,10 @@ export default {
       personalCenterUrl: "",
       accountSettingsUrl: "",
       switchAccountUrl: "",
-      logOutUrl: "",
+      getConfigUrl: "/api/config/get",
+      searchUrl: "/api/emoji/search",
       showUserData: false,
-      subAlias: "坤坤基尼太美",
+      alias: "坤坤基尼太美",
       city: "广州",
       temperature: "32℃",
       searchValue: "",
@@ -172,104 +173,233 @@ export default {
         pageSize: 14,
       },
       // 配置信息
-      emojiConfig: {
-        emojiBaseUrl: "",
+      getConfigVO: {
+        pictureBaseUrl: "",
       },
+      loginToken: "",
+      // aliasPictureUrl: "",
+      loginUserInfo: "",
     };
   },
-  components: {},
   methods: {
-    //
     custerList(item) {
       // 跳转页面网址
       var skipUrl;
       switch (item) {
         case "personalCenter":
-          skipUrl = this.serverUrl + this.personalCenterUrl;
+          skipUrl = "/userInfo";
           break;
         case "accountSettings":
-          skipUrl = this.serverUrl + this.accountSettingsUrl;
+          skipUrl = "/accountSettings";
           break;
         case "switchAccount":
-          skipUrl = this.serverUrl + this.switchAccountUrl;
+          skipUrl = "/switchAccount";
           break;
         case "logOut":
-          skipUrl = this.serverUrl + this.logOutUrl;
+          {
+            this.$cookies.remove("user_info");
+            this.$cookies.remove("login_token");
+            // 刷新当前页面
+            this.$router.go(0);
+          }
           break;
         default:
           skipUrl = "http://www.baidu.com";
       }
-      // 跳转到可以回退的页面
-      window.location = skipUrl;
+      console.info("skipUrl->" + skipUrl);
+      if (skipUrl !== undefined) {
+        this.$router.push(skipUrl);
+      }
     },
+
     // 开始搜索
-    async doSearch(value) {
-      console.info("开始搜索..." + value);
-      this.showLoading = !this.showLoading;
-      setTimeout(() => {
-        this.emojiList = [
-          { id: 1 },
-          { id: 2 },
-          { id: 3 },
-          { id: 4 },
-          { id: 5 },
-          { id: 6 },
-          { id: 7 },
-          { id: 8 },
-          { id: 9 },
-          { id: 10 },
-          { id: 11 },
-          { id: 12 },
-          { id: 13 },
-          { id: 14 },
-          // { id: 15 },
-          // { id: 16 },
-          // { id: 17 },
-        ];
-        this.showSearchContent = !this.showSearchContent;
-        this.showLoading = !this.showLoading;
-        // this.showNoData = !this.showNoData;
-      }, 1000);
+    async doSearch(searchValue) {
+      console.info(this.getConfigVO.pictureBaseUrl + this.aliasPictureUrl);
+      if (searchValue === "") {
+        this.$message({
+          message: "请先输入搜索内容",
+          type: "warning",
+        });
+        return;
+      }
+
+      if (await this.checkLogin()) {
+        return;
+      }
+      this.pageData = {
+        pageNum: 0,
+        total: 0,
+        pageSize: 14,
+      };
+      console.info("开始搜索..." + searchValue);
+      this.showLoading = true;
+      var result = await this.$http({
+        methods: "get",
+        url: this.serverUrl + this.searchUrl,
+        headers: {
+          Authorization: this.loginToken,
+        },
+        params: {
+          searchContent: searchValue,
+          page: this.pageData.pageNum,
+          size: this.pageData.pageSize,
+        },
+      })
+        // .then((res) => {
+        //   if (res.status === 200) {
+        //     result = res;
+        //   }
+        // })
+        .catch((err) => {
+          console.error(
+            "调用搜索接口返回错误->" + JSON.stringify(err.response.data)
+          );
+          this.$message.error(err.response.data.message);
+          return;
+        });
+      this.showLoading = false;
+      // console.info("搜索结果->" + JSON.stringify(result.data.body));
+      if (
+        result !== undefined &&
+        result.data.body.list !== undefined &&
+        result.data.body.list.length !== 0
+      ) {
+        // 数据不为空
+        this.showSearchContent = true;
+        this.showNoData = false;
+        this.emojiList = result.data.body.list;
+        this.pageData = result.data.body;
+      } else {
+        this.showNoData = true;
+        this.showSearchContent = false;
+      }
     },
     // 跳转页数
     async changePage(val) {
+      if (await this.checkLogin()) {
+        return;
+      }
       val = val - 1;
       console.log("当前页->" + val);
-      // var result = await this.post(this.serverUrl + this.searchUrl, {
-      //   searchContent: this.searchValue,
-      //   page: val,
-      //   size: this.pageData.pageSize,
-      // });
-
-      // this.handlerResult(result);
-      // if (this.showNoSearchData) {
-      // }
+      // var result;
+      var result = await this.$http({
+        methods: "get",
+        url: this.serverUrl + this.searchUrl,
+        headers: {
+          Authorization: this.loginToken,
+        },
+        params: {
+          searchContent: this.searchValue,
+          page: val,
+          size: this.pageData.pageSize,
+        },
+      })
+        // .then((res) => {
+        //   if (res.status === 200) {
+        //     result = res;
+        //   }
+        // })
+        .catch((err) => {
+          console.error(
+            "调用分页接口返回错误->" + JSON.stringify(err.response.data)
+          );
+          this.$message.error(err.response.data.message);
+          return;
+        });
+      // console.info("分页返回数据->" + JSON.stringify(result));
+      this.emojiList = result.data.body.list;
+      this.pageData = result.data.body;
+    },
+    // 路由到登录页面
+    gotoLogin() {
+      setTimeout(() => {
+        this.$router.push("/login");
+      }, 1000);
+    },
+    // 检查是否已经登录
+    async checkLogin() {
+      // console.info("======================");
+      // console.info(this.loginToken);
+      // console.info(this.loginUserInfo);
+      if (
+        this.loginToken === undefined ||
+        this.loginUserInfo === undefined ||
+        this.loginToken === null ||
+        this.loginUserInfo === null ||
+        this.loginToken === "" ||
+        this.loginUserInfo === ""
+      ) {
+        // console.info("检查登录");
+        await this.$confirm("登录后才能使用, 是否立刻去登录?", "提示", {
+          confirmButtonText: "去登录",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            this.gotoLogin();
+          })
+          .catch(() => {});
+        return true;
+      }
+      return false;
     },
     // 检查当前是否已经登录
-    async checkLogin() {
+    async initData() {
       var token = this.$cookies.get("login_token");
-      console.log("当前token->" + token);
+      // console.log("当前token->" + JSON.stringify(token));
       // 未登录
-      if (token === undefined) {
-      } else {
+      if (token !== undefined && token !== "" && token !== null) {
+        var userInfo = this.$cookies.get("user_info");
+        // console.info("用户信息->" + JSON.stringify(userInfo));
+        if (userInfo !== undefined && userInfo !== "" && userInfo !== null) {
+          this.alias = userInfo.nickName;
+          // this.aliasPictureUrl = userInfo.avatar;
+          this.loginToken = token;
+          this.loginUserInfo = userInfo;
+          this.showUserData = true;
+          this.getConfig();
+        }
       }
+    },
+    // 获取配置
+    async getConfig() {
+      var result;
+      await this.$http({
+        url: this.serverUrl + this.getConfigUrl,
+        headers: {
+          Authorization: this.loginToken,
+        },
+      })
+        .then((res) => {
+          if (res.status === 200) {
+            result = res;
+          }
+        })
+        .catch((err) => {
+          console.error(
+            "调用获取配置接口返回错误->" + JSON.stringify(err.response.data)
+          );
+          this.$message.error(err.response.data.message);
+          return;
+        });
+      // console.info(JSON.stringify(result.data));
+      this.getConfigVO = result.data.body;
     },
   },
   computed: {
     // 计算昵称长度，大于6个汉字则用...省略
     subAlias() {
       var computedAlias = this.alias;
-      if (computedAlias.length > 6) {
+      if (computedAlias !== undefined && computedAlias.length > 6) {
         computedAlias = computedAlias.substring(0, 5) + "...";
       }
       return computedAlias;
     },
-    // 处理登录路径
-    loginUrl() {
-      return "http://localhost:8080/#/login";
-    },
   },
-  mounted() {},
+
+  mounted() {
+    this.initData();
+  },
 };
 </script>
 
@@ -286,11 +416,11 @@ export default {
   margin: 0;
   padding: 0;
 }
-.search_left_aside {
+/* .search_left_aside {
 }
 
 .search_left_right {
-}
+} */
 .serach_footer {
   text-align: center;
   border-top: 1px solid rgb(210, 208, 208);
@@ -314,7 +444,8 @@ export default {
   font: 13px/23px Arial, sans-serif;
 }
 .to_login_link {
-  margin: 28px 50px 0px 5px;
+  margin: 20px 40px 0px 5px;
+  letter-spacing: 2px;
 }
 .search_logo {
   width: 27%;
@@ -328,21 +459,18 @@ export default {
 .search_content {
   margin-top: 50px;
   margin-bottom: 30px;
-  /* background-color: rgb(180, 181, 183); */
   width: 100%;
   height: 52%;
   overflow: auto;
 }
-.page_box {
-  /* position: relative; */
-  /* top: 0; */
-}
+/* .page_box {
+} */
 .search_content_loading {
   width: 100%;
   height: 100%;
 }
 .no_search_data {
-  margin-top: 50px;
+  /* margin-top: 50px; */
 }
 .emoji_content {
   width: 130px;

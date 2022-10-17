@@ -19,6 +19,7 @@
             type="password"
             v-model="ruleForm.passWord"
             autocomplete="off"
+            show-password
           ></el-input>
         </el-form-item>
 
@@ -154,20 +155,30 @@ export default {
         })
         .then((res) => {
           if (res.status === 200) {
-            console.log(JSON.stringify(res));
+            // console.log(JSON.stringify(res));
             this.$message({
               message: "登录成功",
               type: "success",
             });
             setTimeout(() => {
-              alert(
-                "登录成功,秘钥->" +
-                  JSON.stringify(res.data.body.userToken) +
-                  "用户信息->" +
-                  JSON.stringify(res.data.body.user)
+              var result = res.data.body;
+
+              this.$cookies.set(
+                "login_token",
+                result.userToken,
+                result.expireTime / 1000,
+                null
               );
-              // window.location.href = "http://www.baidu.com";
-            }, 2000);
+
+              this.$cookies.set(
+                "user_info",
+                result.user,
+                result.expireTime / 1000,
+                null
+              );
+
+              this.$router.go(-1);
+            }, 1500);
           }
         })
         .catch((err) => {
@@ -206,7 +217,7 @@ export default {
 <style scoped>
 .login {
   background-image: url(../../static/backgroud.png);
-  /* background-repeat: no-repeat; */
+  background-repeat: no-repeat;
   background-size: 100%;
   height: 100%;
 }
@@ -227,7 +238,6 @@ export default {
   left: 31%;
   width: 30%;
   padding: 15px 80px 0px 10px;
-  /* text-align: center; */
   background-color: rgb(202, 200, 200);
   border-radius: 20px;
   opacity: 0.77;

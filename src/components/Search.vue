@@ -56,15 +56,17 @@
         <div class="search_box">
           <el-container>
             <!-- 搜索输入框 -->
-            <el-input
+            <el-autocomplete
               class="search_input"
               placeholder="请输入搜索内容..."
               v-model.trim="searchValue"
               @keyup.enter.native="doSearch(searchValue)"
               :disabled="showLoading"
+              :fetch-suggestions="querySearch"
+              @select="handleSearchSelect"
               clearable
             >
-            </el-input>
+            </el-autocomplete>
             <!-- 搜索按钮 -->
             <el-button
               style="background-color: #4e6ef2"
@@ -179,6 +181,8 @@ export default {
       loginToken: "",
       // aliasPictureUrl: "",
       loginUserInfo: "",
+      // 历史搜索数据
+      searchSelectList: [],
     };
   },
   methods: {
@@ -211,7 +215,15 @@ export default {
         this.$router.push(skipUrl);
       }
     },
-
+    //
+    querySearch(queryString, cb) {
+      console.info("queryString->" + queryString);
+      cb(this.searchSelectList);
+    },
+    //
+    handleSearchSelect(item) {
+      console.log("handleSearchSelect->" + item);
+    },
     // 开始搜索
     async doSearch(searchValue) {
       console.info(this.getConfigVO.pictureBaseUrl + this.aliasPictureUrl);
@@ -222,7 +234,6 @@ export default {
         });
         return;
       }
-
       if (await this.checkLogin()) {
         return;
       }
@@ -244,21 +255,14 @@ export default {
           page: this.pageData.pageNum,
           size: this.pageData.pageSize,
         },
-      })
-        // .then((res) => {
-        //   if (res.status === 200) {
-        //     result = res;
-        //   }
-        // })
-        .catch((err) => {
-          console.error(
-            "调用搜索接口返回错误->" + JSON.stringify(err.response.data)
-          );
-          this.$message.error(err.response.data.message);
-          return;
-        });
+      }).catch((err) => {
+        console.error(
+          "调用搜索接口返回错误->" + JSON.stringify(err.response.data)
+        );
+        this.$message.error(err.response.data.message);
+        return;
+      });
       this.showLoading = false;
-      // console.info("搜索结果->" + JSON.stringify(result.data.body));
       if (
         result !== undefined &&
         result.data.body.list !== undefined &&
@@ -269,6 +273,8 @@ export default {
         this.showNoData = false;
         this.emojiList = result.data.body.list;
         this.pageData = result.data.body;
+        // 添加搜索历史
+        this.addSearchHistory(searchValue);
       } else {
         this.showNoData = true;
         this.showSearchContent = false;
@@ -293,19 +299,13 @@ export default {
           page: val,
           size: this.pageData.pageSize,
         },
-      })
-        // .then((res) => {
-        //   if (res.status === 200) {
-        //     result = res;
-        //   }
-        // })
-        .catch((err) => {
-          console.error(
-            "调用分页接口返回错误->" + JSON.stringify(err.response.data)
-          );
-          this.$message.error(err.response.data.message);
-          return;
-        });
+      }).catch((err) => {
+        console.error(
+          "调用分页接口返回错误->" + JSON.stringify(err.response.data)
+        );
+        this.$message.error(err.response.data.message);
+        return;
+      });
       // console.info("分页返回数据->" + JSON.stringify(result));
       this.emojiList = result.data.body.list;
       this.pageData = result.data.body;
@@ -318,9 +318,6 @@ export default {
     },
     // 检查是否已经登录
     async checkLogin() {
-      // console.info("======================");
-      // console.info(this.loginToken);
-      // console.info(this.loginUserInfo);
       if (
         this.loginToken === undefined ||
         this.loginUserInfo === undefined ||
@@ -346,18 +343,19 @@ export default {
     // 检查当前是否已经登录
     async initData() {
       var token = this.$cookies.get("login_token");
-      // console.log("当前token->" + JSON.stringify(token));
       // 未登录
       if (token !== undefined && token !== "" && token !== null) {
         var userInfo = this.$cookies.get("user_info");
-        // console.info("用户信息->" + JSON.stringify(userInfo));
         if (userInfo !== undefined && userInfo !== "" && userInfo !== null) {
           this.alias = userInfo.nickName;
-          // this.aliasPictureUrl = userInfo.avatar;
           this.loginToken = token;
           this.loginUserInfo = userInfo;
           this.showUserData = true;
           this.getConfig();
+          var arr = this.$cookies.get("user_search_history");
+          if (arr !== null && arr !== undefined) {
+            this.searchSelectList = JSON.parse(arr);
+          }
         }
       }
     },
@@ -384,6 +382,30 @@ export default {
         });
       // console.info(JSON.stringify(result.data));
       this.getConfigVO = result.data.body;
+    },
+    // 添加搜索历史
+    addSearchHistory(searchValue) {
+      var set = this.$cookies.get("user_search_history");
+      if (set === null) {
+        // 创建有序无重复的集合
+        set = new Set();
+        set.add({ id: 0, value: searchValue });
+      } else {
+        set = new Set(JSON.parse(set));
+        // setTemp = new Set(JSON.parse(set));
+        for (const item of set) {
+          console.info("item->" + JSON.stringify(item));
+          if (item.value === searchValue) {
+            set.delete(item);
+          }
+        }
+        set.add({ id: set.size + 1, value: searchValue });
+      }
+      // 集合数据转json
+      var jsonSet = JSON.stringify(Array.from(set));
+      console.info("搜索历史->" + jsonSet);
+      this.searchSelectList = Array.from(set);
+      this.$cookies.set("user_search_history", jsonSet, "30d", null);
     },
   },
   computed: {

@@ -90,7 +90,6 @@ export default {
         headers: {
           ContentType: "multipart/form-data",
           "Content-Type": "multipart/form-data",
-          "content-type": "multipart/form-data",
           Authorization: this.loginToken,
         },
         params: fd,

@@ -45,6 +45,9 @@
           >
             登录
           </el-button>
+          <el-button class="to_register_link" type="text" @click="gotoRegister"
+            >去注册..</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
@@ -110,6 +113,12 @@ export default {
     };
   },
   methods: {
+    // 跳转到注册页面
+    gotoRegister() {
+      setTimeout(() => {
+        this.$router.push("/register");
+      }, 1000);
+    },
     // 登录方法
     async login(ruleForm) {
       this.showLogging = true;
@@ -241,5 +250,10 @@ export default {
   background-color: rgb(202, 200, 200);
   border-radius: 20px;
   opacity: 0.77;
+}
+
+.to_register_link{
+  letter-spacing: 2px;
+  margin-left: 80px;
 }
 </style>

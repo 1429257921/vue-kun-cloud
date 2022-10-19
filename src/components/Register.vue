@@ -73,7 +73,8 @@ export default {
         callback(new Error("请输入用户名"));
       } else {
         // 密码至少包含1个大写字母，1个小写字母，1个数字,下划线，横线
-        const regE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z0-9-\\_]{6,18}$/;
+        // const regE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z0-9-\\_]{6,18}$/;
+        const regE = /^[a-zA-Z0-9]{6,20}$/;
         const regES = new RegExp(regE);
         if (!regES.test(value)) {
           callback(new Error("账号名格式错误"));
@@ -127,8 +128,6 @@ export default {
       validatedCodeUrl: "/api/auth/validatedCode",
       publicKey:
         "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCrM+z/DwD4zf0Czl8/fg7B+mfZ89+LIzNoFBkLVYzSF+NMtIovovlZd33Lgjpi73EqQM7a5SQhTbzfVF/VQyvVwjoEv3zVfW1s5KqV8NI+1fQtZ8Ef/vFDOKEz5CYxzJggvXIQFvpbJPvupWWxV84O5oeneTQzI3aqlOIknoHDzQIDAQAB",
-      skipLoginUrl: "http://localhost:8080/#/login",
-      // 是否登录中
       showRegistration: false,
       getCodeData: {
         uuid: "",
@@ -201,8 +200,8 @@ export default {
               type: "success",
             });
             setTimeout(() => {
-              window.location.href = this.skipLoginUrl;
-            }, 3000);
+              this.$router.push("/login");
+            }, 2000);
           }
         })
         .catch((err) => {

@@ -191,7 +191,7 @@ export default {
       var skipUrl;
       switch (item) {
         case "personalCenter":
-          skipUrl = "/userInfo";
+          skipUrl = "/personalCenter";
           break;
         case "accountSettings":
           skipUrl = "/accountSettings";

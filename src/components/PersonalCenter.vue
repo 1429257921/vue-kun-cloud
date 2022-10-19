@@ -1,22 +1,33 @@
 <template>
   <div class="personal_center">
+    <div class="title">个人中心</div>
     <el-form
       :model="userInfo"
       :rules="rules"
       ref="ruleForm"
-      label-width="100px"
-      class="demo-ruleForm"
+      label-width="auto"
+      class="user_info_box"
+      size="mini"
     >
       <el-container>
-        <div>
-          <el-form-item label="昵称" prop="nickname">
+        <div class="base_user_box">
+          <el-form-item label="账号名:">
+            &nbsp;&nbsp;&nbsp; {{ userInfo.username }}
+          </el-form-item>
+          <el-form-item label="昵称:" prop="nickname">
             <el-input v-model="userInfo.nickname"></el-input>
           </el-form-item>
-          <el-form-item label="生日" prop="birthday">
+          <el-form-item label="生日:" prop="birthday">
             <el-input
               placeholder="几月几号,示例1105"
               v-model.number="userInfo.birthday"
             ></el-input>
+          </el-form-item>
+          <el-form-item label="性别:" prop="sex">
+            <el-radio-group v-model="userInfo.sex">
+              <el-radio label="男" value="0"></el-radio>
+              <el-radio label="女" value="1"></el-radio>
+            </el-radio-group>
           </el-form-item>
         </div>
         <!-- 头像展示 -->
@@ -32,6 +43,39 @@
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
       </el-container>
+      <el-container class="extend_box">
+        <el-form-item
+          prop="email"
+          label="邮箱"
+          :rules="[
+            { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+            {
+              type: 'email',
+              message: '请输入正确的邮箱地址',
+              trigger: ['blur', 'change'],
+            },
+          ]"
+        >
+          <el-input v-model="userInfo.email"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号:" prop="phone">
+          <el-input v-model.number="userInfo.phone"></el-input>
+        </el-form-item>
+      </el-container>
+
+      <el-form-item
+        label="个人介绍"
+        prop="mark"
+        style="width: 93%; height: 100px"
+      >
+        <el-input type="textarea" v-model="userInfo.mark"></el-input>
+      </el-form-item>
+      <div class="submit_box">
+        <el-form-item>
+          <el-button type="primary" @click="save('userInfo')">保存 </el-button>
+          <el-button @click="resetForm('userInfo')">取消</el-button>
+        </el-form-item>
+      </div>
     </el-form>
   </div>
 </template>
@@ -52,6 +96,7 @@ export default {
         username: "",
         birthday: "",
         sex: "",
+        email: "",
         mark: "",
         nickname: "",
         avatar: "",
@@ -83,23 +128,23 @@ export default {
     async uploadAvatar(param) {
       let fd = new FormData();
       fd.append("file", param.file);
+      fd.append("name", "1234565");
       // fd.append('name',  dataForm.name);
-      var result = await this.$http({
-        methods: "get",
-        url: this.serverUrl + this.uploadFileeUrl,
-        headers: {
-          ContentType: "multipart/form-data",
-          "Content-Type": "multipart/form-data",
-          Authorization: this.loginToken,
-        },
-        params: fd,
-      }).catch((err) => {
-        console.error(
-          "调用文件上传接口返回错误->" + JSON.stringify(err.response.data)
-        );
-        this.$message.error(err.response.data.message);
-        return;
-      });
+      var result = await this.$http
+        .post(this.serverUrl + this.uploadFileeUrl, fd, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: this.loginToken,
+          },
+          timeout: 20000,
+        })
+        .catch((err) => {
+          console.error(
+            "调用文件上传接口返回错误->" + JSON.stringify(err.response.data)
+          );
+          this.$message.error(err.response.data.message);
+          return;
+        });
       console.info("文件上传->" + JSON.stringify(result.data.body));
     },
     // 检查当前是否已经登录
@@ -134,6 +179,7 @@ export default {
         return;
       });
       console.info("获取用户详情信息->" + JSON.stringify(result.data.body));
+      this.userInfo = result.data.body;
     },
     // 获取配置
     async getConfig() {
@@ -158,6 +204,39 @@ export default {
 };
 </script>
 <style scoped>
+.personal_center {
+  background-color: #8c939d;
+  border: 1px dashed #d9d9d9;
+  width: 40%;
+  height: 79%;
+  margin: 0;
+  position: relative;
+  left: 30%;
+  top: 5%;
+  opacity: 0.87;
+  border-radius: 10px;
+  padding-left: 20px;
+}
+.title {
+  font-size: 25px;
+  color: #409eff;
+  text-align: center;
+  padding: 20px 0px;
+}
+.user_info_box {
+  /* margin-left: 25px; */
+}
+.base_user_box {
+  margin-right: 55px;
+}
+.extend_box {
+  margin-top: 20px;
+}
+.submit_box {
+  text-align: center;
+  margin: 0;
+}
+
 .avatar-uploader .el-upload {
   border-radius: 6px;
   cursor: pointer;
@@ -183,8 +262,5 @@ export default {
   width: 178px;
   height: 178px;
   display: block;
-}
-.avatar:hover {
-  border-color: #409eff;
 }
 </style>

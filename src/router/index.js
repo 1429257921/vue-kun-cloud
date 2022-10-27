@@ -4,6 +4,8 @@ import Login from '@/components/Login'
 import Search from '@/components/Search'
 import Register from '@/components/Register'
 import PersonalCenter from '@/components/PersonalCenter'
+import M_Register from '@/components/mobile/M_Register'
+import GoChat from '@/components/mobile/GoChat'
 
 Vue.use(Router)
 
@@ -28,6 +30,16 @@ export default new Router({
       path: '/personalCenter',
       name: 'PersonalCenter',
       component: PersonalCenter
+    },
+    {
+      path: '/mobile/register',
+      name: 'M_Register',
+      component: M_Register
+    },
+    {
+      path: '/mobile/chat',
+      name: 'GoChat',
+      component: GoChat
     },
   ]
 })

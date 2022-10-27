@@ -20,6 +20,10 @@ Vue.prototype.$http = axios;
 Vue.prototype.$jsEncrypt = JSEncrypt;
 // 配置全局变量
 Vue.use(VueCookies)
+// 移动端页面适配
+Vue.prototype.$getComponentSize = function () {
+  return window.innerWidth < 480 ? 'mini' : null
+}
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

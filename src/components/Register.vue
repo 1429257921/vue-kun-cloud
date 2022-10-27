@@ -122,7 +122,7 @@ export default {
     };
 
     return {
-      serverUrl: "http://localhost:9200/kun-blog",
+      serverUrl: "http://192.168.3.10:9200/kun-blog",
       getCodeUrl: "/api/auth/getCode",
       registerUrl: "/api/auth/register",
       validatedCodeUrl: "/api/auth/validatedCode",

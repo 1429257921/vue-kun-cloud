@@ -84,7 +84,7 @@ export default {
   name: "PersonalCenter",
   data() {
     return {
-      serverUrl: "http://localhost:9200/kun-blog",
+      serverUrl: "http://192.168.3.10:9200/kun-blog",
       getUserDetailsUrl: "/api/user/getUserDetails",
       getConfigUrl: "/api/config/get",
       uploadFileeUrl: "/api/file/upload",
@@ -223,9 +223,7 @@ export default {
   text-align: center;
   padding: 20px 0px;
 }
-.user_info_box {
-  /* margin-left: 25px; */
-}
+
 .base_user_box {
   margin-right: 55px;
 }

@@ -4,10 +4,14 @@ import Login from '@/components/Login'
 import Search from '@/components/Search'
 import Register from '@/components/Register'
 import PersonalCenter from '@/components/PersonalCenter'
+
 import M_Register from '@/components/mobile/Register'
 import M_Login from '@/components/mobile/Login'
-import M_Chat from '@/components/mobile/Chat'
-import M_Me from '@/components/mobile/Me'
+import Chat from '@/components/mobile/Chat'
+import ChatList from '@/components/mobile/ChatList'
+import FriendList from '@/components/mobile/FriendList'
+import Find from '@/components/mobile/Find'
+import Me from '@/components/mobile/Me'
 
 Vue.use(Router)
 
@@ -40,18 +44,36 @@ export default new Router({
     },
     {
       path: '/mobile/chat',
-      name: 'M_Chat',
-      component: M_Chat
+      name: 'Chat',
+      component: Chat,
+      children: [
+        {
+          path: '/mobile/chatList',
+          name: 'ChatList',
+          component: ChatList,
+        },
+        {
+          path: '/mobile/friendList',
+          name: 'FriendList',
+          component: FriendList,
+        },
+        {
+          path: '/mobile/find',
+          name: 'Find',
+          component: Find,
+        },
+        {
+          path: '/mobile/me',
+          name: 'Me',
+          component: Me
+        }
+      ]
     },
     {
       path: '/mobile/login',
       name: 'M_Login',
       component: M_Login
     },
-    {
-      path: '/mobile/me',
-      name: 'M_Me',
-      component: M_Me
-    },
+
   ]
 })

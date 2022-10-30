@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h1>我的</h1>
+    <h1>好友列表</h1>
   </div>
 </template>
 <script>
 export default {
-  name: "Me",
+  name: "FriendList",
   data() {
     return {};
   },

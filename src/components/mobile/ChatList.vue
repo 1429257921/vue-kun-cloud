@@ -1,11 +1,11 @@
 <template>
-  <div>
-    <h1>我的</h1>
+  <div class="chat-list">
+    <h1>你好啊</h1>
   </div>
 </template>
 <script>
 export default {
-  name: "Me",
+  name: "ChatList",
   data() {
     return {};
   },
